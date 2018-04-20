@@ -1,11 +1,13 @@
 # acme-f5-deploy
 Python script to deploy &amp; renew certificates and profiles using F5 API
 
+A bit rough around the edges.
+
 ## Usage
 `This has primarily been tested using Docker, but should work fine without`
 1. Build docker image:
 `docker build -t acme_f5 .`
-2. Move all files from this repository into the root directory for acme.sh (in these examples it is $(pwd)/out/)
+2. Copy the config and f5deploy directories into the root directory for acme.sh (in these examples it is `$(pwd)/out`)
 3. Modify creds.json to include the F5 hosts to deploy certificates to (may be multiple) and credentials - credentials are the same for all hosts.
 4. Launch acme.sh in docker with the deployment script as --renew-hook target
   ```
@@ -21,7 +23,7 @@ Python script to deploy &amp; renew certificates and profiles using F5 API
   acme_f5 --renew -d xyz.domain.com --force
   ```
   
-At this stage the script should run and successfully create certificates, keys, chains and profiles on the F5 appliances.
+At this stage the script should run and successfully create certificates, keys, chains and profiles on the F5 appliances ready for use.
 
 On first run the certificates aren't pushed to the F5 - this is a shortcoming in acme.sh where a certificate issuance isn't considered a renewal, and there is no other way to trigger the script. An alternative to forcing a renew is to cd to the out/xyz.domain.com directory and run `../f5deploy/f5deploy.py xyz.domain.com`. This only needs to be done once.
 
@@ -32,6 +34,8 @@ On the F5 the following are created:
 - Certificate & Key: xyz.domain.com
 - Chain: xyz.domain.com.le-chain - this includes both the domain certificate and LetsEncrypt Authority.
 - Client SSL Profile: cssl.xyz.domain.com
+
+Configuration directory is hardcoded to ../f5deploy/config/ within the script - this is OK in the general case but may not be accurate if you have configured acme.sh to put certificates outside of the default location (or have the script and config elsewhere when not running under docker).
 
 ## Credits
 @f5central for the API script modified from https://github.com/f5devcentral/lets-encrypt-python
