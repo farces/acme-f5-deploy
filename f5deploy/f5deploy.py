@@ -10,7 +10,8 @@ import sys
 import time
 
 # slurp credentials
-with open('../f5deploy/config/creds.json', 'r') as f:
+cfg_file = os.path.join(sys.path[0],"config/creds.json")
+with open(cfg_file, 'r') as f:
     config = json.load(f)
 f.close()
 
