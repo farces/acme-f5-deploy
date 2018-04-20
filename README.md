@@ -24,3 +24,5 @@ At this stage the script should run and successfully create certificates, keys, 
 On first run the certificates aren't pushed to the F5 - this is a shortcoming in acme.sh where a certificate issuance isn't considered a renewal, and there is no other way to trigger the script. An alternative to forcing a renew is to cd to the out/xyz.domain.com directory and run `../f5deploy/f5deploy.py xyz.domain.com`. This only needs to be done once.
 
 This works correctly for all use cases found at https://github.com/Neilpang/acme.sh/wiki/Run-acme.sh-in-docker including daemon, which will automatically renew and push changes to the F5.
+
+Credit to @f5central for the API script modified from https://github.com/f5devcentral/lets-encrypt-python
