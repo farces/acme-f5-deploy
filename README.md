@@ -27,4 +27,11 @@ On first run the certificates aren't pushed to the F5 - this is a shortcoming in
 
 This works correctly for all use cases found at https://github.com/Neilpang/acme.sh/wiki/Run-acme.sh-in-docker including daemon, which will automatically renew and push changes to the F5.
 
-Credit to @f5central for the API script modified from https://github.com/f5devcentral/lets-encrypt-python
+## Notes
+On the F5 the following are created:
+- Certificate & Key: xyz.domain.com
+- Chain: xyz.domain.com.le-chain - this includes both the domain certificate and LetsEncrypt Authority.
+- Client SSL Profile: cssl.xyz.domain.com
+
+## Credits
+@f5central for the API script modified from https://github.com/f5devcentral/lets-encrypt-python
