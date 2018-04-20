@@ -38,7 +38,5 @@ On the F5 the following are created:
 - Chain: xyz.domain.com.le-chain - this includes both the domain certificate and LetsEncrypt Authority.
 - Client SSL Profile: cssl.xyz.domain.com
 
-Configuration directory is hardcoded to ../f5deploy/config/ within the script - this is OK in the general case but may not be accurate if you have configured acme.sh to put certificates outside of the default location (or have the script and config elsewhere when not running under docker).
-
 ## Credits
 @f5central for the API script modified from https://github.com/f5devcentral/lets-encrypt-python
