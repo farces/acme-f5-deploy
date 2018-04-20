@@ -3,6 +3,8 @@ Python script to deploy &amp; renew certificates and profiles using F5 API
 
 A bit rough around the edges.
 
+Repo includes a modified Dockerfile to include python, pip and f5-sdk.
+
 ## Usage
 `This has primarily been tested using Docker, but should work fine without`
 1. Build docker image:
