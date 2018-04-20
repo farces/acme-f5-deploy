@@ -114,20 +114,8 @@ def main(argv):
     Main entrypoint.
     Can be accessed either through acme.sh deploy (called via an sh script) or
     through --renew-hook.
-
-    When called by --deploy it will be passed 5 arguments representing domain
-    and paths to certificates. argv[0] represents the renewed domain, which can
-    be used to derive all certificate paths.
-
-    When called by --renew-hook no arguments are passed, however os.cwd()
-    returns the path to the domain's certificates. Basename represents the
-    renewed domain.
-
-    For F5 SSL cert deployment purposes the full list of domains on the
-    certificate does not matter.
-
     """
-    domain = argv[0] if argv else os.path.basename(os.getcwd())
+    domain os.path.basename(os.getcwd())
 
     logger.info("Deploying to F5 for {0}".format(domain))
     deploy_cert(domain)
