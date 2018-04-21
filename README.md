@@ -47,24 +47,27 @@ All configuration is in config/creds.json.
 f5host: may be a single IP address, or multiple separated by commas.
 f5acct and f5pw are shared for all hosts at this stage.
 
-To use the `f5deploy.sh` script you should place `f5deploy.sh` in the deploy directory of acme.sh and run the following:
-```
-docker run --rm  -it  \
--v "$(pwd)/out":/acme.sh  \
-acme_f5 --issue -d xyz.domain.com \ 
-```
+## acme.sh --deploy
+*If you're using docker with the included Dockerfile, the deploy script is copied automatically during build.*
+If you're not using docker you will need to copy `f5deploy.sh` to the deploy directory of acme.sh.
+
+You can then run `acme.sh --deploy -d xyz.domain.com --deploy-hook f5deploy`
+
+For Docker you would use:
 ```
 docker run --rm  -it  \
 -v "$(pwd)/out":/acme.sh  \
 acme_f5 --deploy -d xyz.domain.com \ 
 --deploy-hook f5deploy
 ```
-If you do an initial --issue with a --renew-hook and then a --deploy with --deploy-hook f5deploy you'll find that acme.sh runs both the renew and deploy scripts on renewal (which is likely OK, but not expected).
+**NOTE: When doing --deploy with a --deploy-hook the hook is stored permanently in the xyz.domain.com.conf file. 
+If you also set a --renew-hook during --issue, it will store both and run both on-renewal, which shouldn't cause problems but is not ideal.**
+*acme.sh* does not have a --deploy-hook method that only runs on successful renewal currently.
 
-I'd recommend just using the --renew-hook and doing a --renew --force the first time rather than both, as --deploy-hook looks like it may run even if a renewal fails.
+At this time I'd recommend using the --renew-hook and doing a --renew --force the first time, rather than using the --deploy-hook. If you opt for the deploy hook script don't also use the --renew-hook parameter. 
 
 ## Notes
-On the F5 the following are created:
+On the F5 the following is created:
 - Certificate & Key: xyz.domain.com
 - Chain: xyz.domain.com.le-chain - this includes both the domain certificate and LetsEncrypt Authority.
 - Client SSL Profile: cssl.xyz.domain.com

@@ -18,7 +18,7 @@ ENV AUTO_UPGRADE 1
 #Install
 ADD ./ /install_acme.sh/
 RUN cd /install_acme.sh && ([ -f /install_acme.sh/acme.sh ] && /install_acme.sh/acme.sh --install || curl https://get.acme.sh | sh) && rm -rf /install_acme.sh/
-
+COPY ./f5deploy.sh /root/.acme.sh/deploy/
 
 RUN ln -s  /root/.acme.sh/acme.sh  /usr/local/bin/acme.sh && crontab -l | grep acme.sh | sed 's#> /dev/null##' | crontab -
 
