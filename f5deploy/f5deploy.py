@@ -27,7 +27,7 @@ logger.setLevel(logging.INFO)
 logger.propagate = False
 
 
-def deploy_cert(domain,path):
+def deploy_cert(domain, path):
     logger.info('Deploying to {0} device(s)'.format(len(f5_hosts)))
     key = '{0}.key'.format(domain)
     cert = '{0}.cer'.format(domain)
@@ -114,17 +114,18 @@ def main(argv):
     """
     domain = os.path.basename(os.getcwd())
     if not domain:
-      # Called from --deploy-hook, create domain and path from argv
-      logger.info("Deploying from --deploy-hook")
-      domain = argv[0]
-      path = os.path.dirname(argv[1])
+        # Called from --deploy-hook, create domain and path from argv
+        logger.info("Deploying from --deploy-hook")
+        domain = argv[0]
+        path = os.path.dirname(argv[1])
     else:
-      # Called from --renew-hook, create domain and path from cwd
-      logger.info("Deploying from --renew-hook")
-      path = os.getcwd()
+        # Called from --renew-hook, create domain and path from cwd
+        logger.info("Deploying from --renew-hook")
+        path = os.getcwd()
 
     logger.info("Deploying to F5 for {0}".format(domain))
-    deploy_cert(domain,path)
+    deploy_cert(domain, path)
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
