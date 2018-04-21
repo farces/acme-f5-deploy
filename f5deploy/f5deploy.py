@@ -27,7 +27,7 @@ logger.setLevel(logging.INFO)
 logger.propagate = False
 
 
-def deploy_cert(domain):
+def deploy_cert(domain,path):
     logger.info('Deploying to {0} device(s)'.format(len(f5_hosts)))
     key = '{0}.key'.format(domain)
     cert = '{0}.cer'.format(domain)
@@ -44,9 +44,9 @@ def deploy_cert(domain):
         mr_cert_exists = mr.tm.sys.file.ssl_certs.ssl_cert.exists
 
         # Upload files
-        mr_upload_file(os.path.join(os.getcwd(), key))
-        mr_upload_file(os.path.join(os.getcwd(), cert))
-        mr_upload_file(os.path.join(os.getcwd(), chain))
+        mr_upload_file(os.path.join(path, key))
+        mr_upload_file(os.path.join(path, cert))
+        mr_upload_file(os.path.join(path, chain))
 
         # Check to see if these already exist
         key_status = mr_key_exists(name='{0}.key'.format(domain))
@@ -113,9 +113,18 @@ def main(argv):
     through --renew-hook.
     """
     domain = os.path.basename(os.getcwd())
+    if not domain:
+      # Called from --deploy-hook, create domain and path from argv
+      logger.info("Deploying from --deploy-hook")
+      domain = argv[0]
+      path = os.path.dirname(argv[1])
+    else:
+      # Called from --renew-hook, create domain and path from cwd
+      logger.info("Deploying from --renew-hook")
+      path = os.getcwd()
 
     logger.info("Deploying to F5 for {0}".format(domain))
-    deploy_cert(domain)
+    deploy_cert(domain,path)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

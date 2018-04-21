@@ -46,6 +46,23 @@ All configuration is in config/creds.json.
 ```
 f5host: may be a single IP address, or multiple separated by commas.
 f5acct and f5pw are shared for all hosts at this stage.
+
+To use the `f5deploy.sh` script you should place `f5deploy.sh` in the deploy directory of acme.sh and run the following:
+```
+docker run --rm  -it  \
+-v "$(pwd)/out":/acme.sh  \
+acme_f5 --issue -d xyz.domain.com \ 
+```
+```
+docker run --rm  -it  \
+-v "$(pwd)/out":/acme.sh  \
+acme_f5 --deploy -d xyz.domain.com \ 
+--deploy-hook f5deploy
+```
+If you do an initial --issue with a --renew-hook and then a --deploy with --deploy-hook f5deploy you'll find that acme.sh runs both the renew and deploy scripts on renewal (which is likely OK, but not expected).
+
+I'd recommend just using the --renew-hook and doing a --renew --force the first time rather than both, as --deploy-hook looks like it may run even if a renewal fails.
+
 ## Notes
 On the F5 the following are created:
 - Certificate & Key: xyz.domain.com
