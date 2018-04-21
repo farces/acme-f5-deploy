@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 
-import requests
 import json
 import logging
 from f5.bigip import ManagementRoot
 from f5.bigip.contexts import TransactionContextManager
 import os
 import sys
-import time
 
 # slurp credentials
-cfg_file = os.path.join(sys.path[0],"config/creds.json")
+cfg_file = os.path.join(sys.path[0], "config/creds.json")
 with open(cfg_file, 'r') as f:
     config = json.load(f)
 f.close()
@@ -22,92 +20,90 @@ f5_password = config['f5pw']
 # Logging
 logger = logging.getLogger(__name__)
 ch = logging.StreamHandler()
-# Try to as closely match acme.sh log formatting as possible.
-formatter = logging.Formatter('[%(asctime)s] %(message)s ','%c')
+formatter = logging.Formatter('[%(asctime)s] %(message)s ', '%c')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 logger.setLevel(logging.INFO)
 logger.propagate = False
 
-requests.packages.urllib3.disable_warnings()
 
 def deploy_cert(domain):
-
     logger.info('Deploying to {0} device(s)'.format(len(f5_hosts)))
     key = '{0}.key'.format(domain)
     cert = '{0}.cer'.format(domain)
     chain = 'fullchain.cer'
 
     for target_host in f5_hosts:
-      mr = ManagementRoot(target_host, f5_user, f5_password)
+        mr = ManagementRoot(target_host, f5_user, f5_password)
 
-      # Upload files
-      mr.shared.file_transfer.uploads.upload_file(os.path.join(os.getcwd(),key))
-      mr.shared.file_transfer.uploads.upload_file(os.path.join(os.getcwd(),cert))
-      mr.shared.file_transfer.uploads.upload_file(os.path.join(os.getcwd(),chain))
+        # Shorten API calls
+        mr_upload_file = mr.shared.file_transfer.uploads.upload_file
+        mr_cert_create = mr.tm.sys.file.ssl_certs.ssl_cert.create
+        mr_key_create = mr.tm.sys.file.ssl_keys.ssl_key.create
+        mr_key_exists = mr.tm.sys.file.ssl_keys.ssl_key.exists
+        mr_cert_exists = mr.tm.sys.file.ssl_certs.ssl_cert.exists
 
-      # Check to see if these already exist
-      key_status = mr.tm.sys.file.ssl_keys.ssl_key.exists(
-          name='{0}.key'.format(domain))
-      cert_status = mr.tm.sys.file.ssl_certs.ssl_cert.exists(
-          name='{0}.crt'.format(domain))
-      chain_status = mr.tm.sys.file.ssl_certs.ssl_cert.exists(
-          name='{0}.le-chain.crt'.format(domain))
+        # Upload files
+        mr_upload_file(os.path.join(os.getcwd(), key))
+        mr_upload_file(os.path.join(os.getcwd(), cert))
+        mr_upload_file(os.path.join(os.getcwd(), chain))
 
-      if key_status and cert_status and chain_status:
+        # Check to see if these already exist
+        key_status = mr_key_exists(name='{0}.key'.format(domain))
+        cert_status = mr_cert_exists(name='{0}.crt'.format(domain))
+        chain_status = mr_cert_exists(name='{0}.le-chain.crt'.format(domain))
 
-          # Certificate, Chain, and Key exist, we will modify them in a transaction
-          tx = mr.tm.transactions.transaction
-          with TransactionContextManager(tx) as api:
+        if key_status and cert_status and chain_status:
 
-              modkey = api.tm.sys.file.ssl_keys.ssl_key.load(
-                  name='{0}.key'.format(domain))
-              modkey.sourcePath = 'file:/var/config/rest/downloads/{0}'.format(
-                  key)
-              modkey.update()
+            # Certificate, Chain, and Key exist, we will modify them in a transaction
+            tx = mr.tm.transactions.transaction
+            with TransactionContextManager(tx) as api:
 
-              modcert = api.tm.sys.file.ssl_certs.ssl_cert.load(
-                  name='{0}.crt'.format(domain))
-              modcert.sourcePath = 'file:/var/config/rest/downloads/{0}'.format(
-                  cert)
-              modcert.update()
+                modkey = api.tm.sys.file.ssl_keys.ssl_key.load(
+                    name='{0}.key'.format(domain))
+                modkey.sourcePath = 'file:/var/config/rest/downloads/{0}'.format(
+                    key)
+                modkey.update()
 
-              modchain = api.tm.sys.file.ssl_certs.ssl_cert.load(
-                  name='{0}.le-chain.crt'.format(domain))
-              modchain.sourcePath = 'file:/var/config/rest/downloads/{0}'.format(
-                  chain)
-              modchain.update()
+                modcert = api.tm.sys.file.ssl_certs.ssl_cert.load(
+                    name='{0}.crt'.format(domain))
+                modcert.sourcePath = 'file:/var/config/rest/downloads/{0}'.format(
+                    cert)
+                modcert.update()
 
-              logger.info(
-                "Existing Certificate for {0} updated.".format(domain))
+                modchain = api.tm.sys.file.ssl_certs.ssl_cert.load(
+                    name='{0}.le-chain.crt'.format(domain))
+                modchain.sourcePath = 'file:/var/config/rest/downloads/{0}'.format(
+                    chain)
+                modchain.update()
 
-      else:
-          newkey = mr.tm.sys.file.ssl_keys.ssl_key.create(
-              name='{0}.key'.format(domain),
-              sourcePath='file:/var/config/rest/downloads/{0}'.format(
-                  key))
-          newcert = mr.tm.sys.file.ssl_certs.ssl_cert.create(
-              name='{0}.crt'.format(domain),
-              sourcePath='file:/var/config/rest/downloads/{0}'.format(
-                  cert))
-          newchain = mr.tm.sys.file.ssl_certs.ssl_cert.create(
-              name='{0}.le-chain.crt'.format(domain),
-              sourcePath='file:/var/config/rest/downloads/{0}'.format(
-                  chain))
-          logger.info(
-              "Certificate, Key and Chain deployed for {0}.".format(domain))
+                logger.info(
+                    "Existing Certificate for {0} updated.".format(domain))
 
-      # Create SSL Profile if necessary
-      if not mr.tm.ltm.profile.client_ssls.client_ssl.exists(
-             name='cssl.{0}'.format(domain), partition='Common'):
-          cssl_profile = {
-              'name': '/Common/cssl.{0}'.format(domain),
-              'cert': '/Common/{0}.crt'.format(domain),
-              'key': '/Common/{0}.key'.format(domain),
-              'chain': '/Common/{0}.le-chain.crt'.format(domain),
-              'defaultsFrom': '/Common/clientssl'
-          }
-          mr.tm.ltm.profile.client_ssls.client_ssl.create(**cssl_profile)
+        else:
+            mr_key_create(
+                name='{0}.key'.format(domain),
+                sourcePath='file:/var/config/rest/downloads/{0}'.format(key))
+            mr_cert_create(
+                name='{0}.crt'.format(domain),
+                sourcePath='file:/var/config/rest/downloads/{0}'.format(cert))
+            mr_cert_create(
+                name='{0}.le-chain.crt'.format(domain),
+                sourcePath='file:/var/config/rest/downloads/{0}'.format(chain))
+            logger.info(
+                "Certificate, Key and Chain deployed for {0}.".format(domain))
+
+        # Create SSL Profile if it does not already exist
+        if not mr.tm.ltm.profile.client_ssls.client_ssl.exists(
+                name='cssl.{0}'.format(domain), partition='Common'):
+            cssl_profile = {
+                'name': '/Common/cssl.{0}'.format(domain),
+                'cert': '/Common/{0}.crt'.format(domain),
+                'key': '/Common/{0}.key'.format(domain),
+                'chain': '/Common/{0}.le-chain.crt'.format(domain),
+                'defaultsFrom': '/Common/clientssl'
+            }
+            mr.tm.ltm.profile.client_ssls.client_ssl.create(**cssl_profile)
 
 
 def main(argv):
@@ -116,7 +112,7 @@ def main(argv):
     Can be accessed either through acme.sh deploy (called via an sh script) or
     through --renew-hook.
     """
-    domain os.path.basename(os.getcwd())
+    domain = os.path.basename(os.getcwd())
 
     logger.info("Deploying to F5 for {0}".format(domain))
     deploy_cert(domain)
