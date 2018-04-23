@@ -114,6 +114,11 @@ def main(argv):
     Can be accessed either through acme.sh deploy (called via an sh script) or
     through --renew-hook.
     """
+    # this is OK based on how acme.sh calls the --renew-hook script:
+    # `cd "$DOMAIN_PATH" && eval "$_chk_renew_hook"`. This is not true for --deploy-hook,
+    # so a missing/incorrect cwd is indicative of a deploy being run. This could be switched
+    # to test the argv[0] and argv[1] arguments and fallback to cwd if that fails (though
+    # if this stopped working due to deploy cwd changing, it'd likely need revision for renew.
     domain = os.path.basename(os.getcwd())
     if not domain:
         # Called from --deploy-hook, create domain and path from argv
