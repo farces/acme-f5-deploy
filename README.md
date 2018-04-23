@@ -31,7 +31,7 @@ On first run the certificates aren't pushed to the F5 - this is a shortcoming in
 An alternative to forcing a renew is to cd to the `out/xyz.domain.com` directory and run `/path/to/f5deploy.py xyz.domain.com` manually. This only needs to be done once for each certificate.
 
 This works correctly for all use cases found at https://github.com/Neilpang/acme.sh/wiki/Run-acme.sh-in-docker including daemon, which will automatically renew and push changes to the F5.
-**If running as daemon with `--restart=unless-stopped` (or equivalent), do not use 1-v $(pwd)/out1 as this won't be correct on restart - use the full path to the out/ directory instead.**
+**If running as daemon with `--restart=unless-stopped` (or equivalent), do not use `-v $(pwd)/out` as this won't be correct on restart - use the full path to the out/ directory instead.**
 ## Configuration
 All configuration is in config/creds.json.
 ```
