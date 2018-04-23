@@ -11,17 +11,16 @@ Repo includes a modified Dockerfile to include python, pip and f5-sdk.
 `This has primarily been tested using Docker, but should work fine without`
 1. Build docker image:
 `docker build -t acme_f5 .`
-2. Copy the config and f5deploy directories into the root directory for acme.sh (in these examples it is `$(pwd)/out`)
-3. `chmod +x $(pwd)/out/f5deploy/f5deploy.py`
-4. Modify creds.json to include the F5 hosts to deploy certificates to (may be multiple) and credentials - credentials are the same for all hosts.
-5. Launch acme.sh in docker with the deployment script as --renew-hook target
+2. `chmod +x ./f5deploy/f5deploy.py`
+3. Modify creds.json to include the F5 hosts to deploy certificates to (may be multiple) and credentials - credentials must be the same for all hosts.
+4. Launch acme.sh in docker with the deployment script as --renew-hook target
   ```
   docker run --rm  -it  \
  -v "$(pwd)/out":/acme.sh  \
  acme_f5 --issue -d xyz.domain.com \ 
  --renew-hook "/acme.sh/f5deploy/f5deploy.py"
   ```
-6. Force renew the certificate
+5. Force renew the certificate
   ```
   docker run --rm  -it  \
   -v "$(pwd)/out":/acme.sh  \
