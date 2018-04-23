@@ -69,11 +69,14 @@ If you also set a --renew-hook during --issue, it will store both and run both o
 
 At this time I'd recommend using the --renew-hook and doing a --renew --force the first time, rather than using the --deploy-hook. If you opt for the deploy hook script don't also use the --renew-hook parameter. 
 
+## acme.sh daemon
+If running as a daemon in docker and --restart is set to true (or any value that would allow a restart) you will need to use `-v "/full/path/to/out:/acme.sh"`. When the container restarts it does not maintain the original $(pwd). This is a docker peculiarity.
+
 ## Notes
 On the F5 the following is created:
 - Certificate & Key: xyz.domain.com
 - Chain: xyz.domain.com.le-chain - this includes both the domain certificate and LetsEncrypt Authority.
-- Client SSL Profile: cssl.xyz.domain.com
+- Client SSL Profile: cssl.xyz.domain.com. This profile is never overwritten and can be customized as required.
 
 ## Credits
 @f5central for the API script modified from https://github.com/f5devcentral/lets-encrypt-python
