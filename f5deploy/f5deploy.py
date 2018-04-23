@@ -17,7 +17,7 @@ f5_hosts = config['f5host']
 f5_user = config['f5acct']
 f5_password = config['f5pw']
 f5_partition = config.get('f5partition',"Common")
-create_cssl = config['create_cssl']
+create_cssl = config.get('create_cssl', True)
 parent_cssl = config.get('parent_cssl',"/Common/clientssl")
 
 # Logging
