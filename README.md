@@ -39,15 +39,22 @@ All configuration is in config/creds.json.
 ```
 {
   "f5host": [
-    "1.2.3.4",
-    "2.3.4.5"
+    "192.168.1.92"
   ],
   "f5acct": "admin",
   "f5pw": "admin"
+  "create_cssl": true,
+  "f5partition": "Common",
+  "parent_cssl": "/Common/clientssl"
 }
 ```
-f5host: may be a single IP address, or multiple separated by commas.
-f5acct and f5pw are shared for all hosts at this stage.
+* f5host: may be a single IP address, or multiple separated by commas.
+* f5acct and f5pw: shared credentials for all hosts at this stage.
+* create_cssl: boolean- create client SSL profile on F5 - default is true.
+* f5partition: partition to crete CSSL in - default is Common. **Only include partition name without leading or trailing slashes.**
+* parent_cssl: parent client SSL profile - default is /Common/clientssl. **Include full path including partition (may be different to f5partition if the profile is e.g. in /Common/ while the new profile will be in /Specific/**
+
+If any of create_cssl, f5partition or parent_cssl are missing they use their defaults.
 
 ## acme.sh --deploy
 *If you're using docker with the included Dockerfile, the deploy script is copied automatically during build.*
