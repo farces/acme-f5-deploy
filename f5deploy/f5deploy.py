@@ -82,7 +82,7 @@ def deploy_cert(domain, path):
                 modchain.update()
 
                 logger.info(
-                    "Existing Certificate for {0} updated.".format(domain))
+                    "Existing Certificate for {0} updated on {1}.".format(domain, target_host))
 
         else:
             mr_key_create(
@@ -95,7 +95,7 @@ def deploy_cert(domain, path):
                 name='{0}.le-chain.crt'.format(domain),
                 sourcePath='file:/var/config/rest/downloads/{0}'.format(chain))
             logger.info(
-                "Certificate, Key and Chain deployed for {0}.".format(domain))
+                "Certificate, Key and Chain deployed for {0} on {1}.".format(domain, target_host))
 
         if create_cssl:
             # Create SSL Profile if it does not already exist
