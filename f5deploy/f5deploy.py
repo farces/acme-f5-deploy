@@ -16,6 +16,9 @@ f.close()
 f5_hosts = config['f5host']
 f5_user = config['f5acct']
 f5_password = config['f5pw']
+f5_partition = config.get('f5partition',"Common")
+create_cssl = config['create_cssl']
+parent_cssl = config.get('parent_cssl',"/Common/clientssl")
 
 # Logging
 logger = logging.getLogger(__name__)
@@ -27,8 +30,9 @@ logger.setLevel(logging.INFO)
 logger.propagate = False
 
 
-def deploy_cert(domain, path):
+def deploy_cert(domain,path):
     logger.info('Deploying to {0} device(s)'.format(len(f5_hosts)))
+    logger.info('Partition: {0}, CSSL: {1}, Parent CSSL: {2}'.format(f5_partition, create_cssl, parent_cssl))
     key = '{0}.key'.format(domain)
     cert = '{0}.cer'.format(domain)
     chain = 'fullchain.cer'
@@ -78,7 +82,7 @@ def deploy_cert(domain, path):
                 modchain.update()
 
                 logger.info(
-                    "Existing Certificate for {0} updated {1}.".format(domain, target_host))
+                    "Existing Certificate for {0} updated.".format(domain))
 
         else:
             mr_key_create(
@@ -91,21 +95,22 @@ def deploy_cert(domain, path):
                 name='{0}.le-chain.crt'.format(domain),
                 sourcePath='file:/var/config/rest/downloads/{0}'.format(chain))
             logger.info(
-                "Certificate, Key and Chain deployed for {0} on {1}.".format(domain, target_host))
+                "Certificate, Key and Chain deployed for {0}.".format(domain))
 
-        # Create SSL Profile if it does not already exist
-        if not mr.tm.ltm.profile.client_ssls.client_ssl.exists(
-                name='cssl.{0}'.format(domain), partition='Common'):
-            cssl_profile = {
-                'name': '/Common/cssl.{0}'.format(domain),
-                'cert': '/Common/{0}.crt'.format(domain),
-                'key': '/Common/{0}.key'.format(domain),
-                'chain': '/Common/{0}.le-chain.crt'.format(domain),
-                'defaultsFrom': '/Common/clientssl'
-            }
-            mr.tm.ltm.profile.client_ssls.client_ssl.create(**cssl_profile)
-            logger.info(
-                    "New Client SSL profile created for {0} on {1}.".format(domain, target_host))
+        if create_cssl:
+          # Create SSL Profile if it does not already exist
+          if not mr.tm.ltm.profile.client_ssls.client_ssl.exists(
+                  name='cssl.{0}'.format(domain), partition='Common'):
+              cssl_profile = {
+                  'name': '/{0}/cssl.{1}'.format(f5_partition, domain),
+                  'cert': '/{0}/{1}.crt'.format(f5_partition, domain),
+                  'key': '/{0}/{1}.key'.format(f5_partition, domain),
+                  'chain': '/{0}/{1}.le-chain.crt'.format(f5_partition, domain),
+                  'defaultsFrom': parent_cssl
+              }
+              mr.tm.ltm.profile.client_ssls.client_ssl.create(**cssl_profile)
+              logger.info(
+                  "New Client SSL profile (/{0}/cssl.{1}) created for {1} on {2}.".format(f5_partition, domain, target_host))
 
 
 def main(argv):
@@ -118,21 +123,20 @@ def main(argv):
     # `cd "$DOMAIN_PATH" && eval "$_chk_renew_hook"`. This is not true for --deploy-hook,
     # so a missing/incorrect cwd is indicative of a deploy being run. This could be switched
     # to test the argv[0] and argv[1] arguments and fallback to cwd if that fails (though
-    # if this stopped working due to deploy cwd changing, it'd likely need revision for renew.
+    # if this stopped working due to deploy cwd changing, it'd likely need revision for renew).
     domain = os.path.basename(os.getcwd())
     if not domain:
-        # Called from --deploy-hook, create domain and path from argv
-        logger.info("Deploying from --deploy-hook")
-        domain = argv[0]
-        path = os.path.dirname(argv[1])
+      # Called from --deploy-hook, create domain and path from argv
+      logger.info("Deploying from --deploy-hook")
+      domain = argv[0]
+      path = os.path.dirname(argv[1])
     else:
-        # Called from --renew-hook, create domain and path from cwd
-        logger.info("Deploying from --renew-hook")
-        path = os.getcwd()
+      # Called from --renew-hook, create domain and path from cwd
+      logger.info("Deploying from --renew-hook")
+      path = os.getcwd()
 
     logger.info("Deploying to F5 for {0}".format(domain))
-    deploy_cert(domain, path)
-
+    deploy_cert(domain,path)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
