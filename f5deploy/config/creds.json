@@ -3,7 +3,7 @@
     "192.168.1.92"
   ],
   "f5acct": "admin",
-  "f5pw": "admin"
+  "f5pw": "admin",
   "create_cssl": true,
   "f5partition": "Common",
   "parent_cssl": "/Common/clientssl"
