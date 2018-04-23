@@ -74,7 +74,7 @@ You can now use `--deploy-hook` more confidently in place of `--renew-hook`.
 
 ## acme.sh --deploy
 *If you're using docker with the included Dockerfile, the deploy script is copied automatically during build.*
-If you're not using docker you will need to copy `f5deploy.sh` to the deploy directory of acme.sh.
+If you're not using docker you can run `./configure.sh --nodocker --deploy-path /path/to/.acme.sh/deploy/
 
 You can then run `acme.sh --deploy -d xyz.domain.com --deploy-hook f5deploy`
 
