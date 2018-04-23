@@ -18,9 +18,18 @@ f5deploy_deploy() {
   _debug _cca "$_cca"
   _debug _cfullchain "$_cfullchain"
 
-  # If using outside of docker, change this to the correct absolute path.
-  /acme.sh/f5deploy/f5deploy.py $1
-  if [ $? -eq 0 ]; then
-    return 1
+  if grep docker /proc/1/cgroup -qa; then
+    # we're in docker
+    /acme.sh/f5deploy/f5deploy.py $*
+    if ! [ $? -eq 0 ]; then
+      return ?$
+    fi
+  else
+    #we're running local
+    echo "run build.sh --nodocker to set script path" && return 1
+    if ! [ $? -eq 0 ]; then
+      return $?
+    fi
   fi
+  return 0
 }
