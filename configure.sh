@@ -15,7 +15,6 @@ while [ ${#} -gt 0 ]; do
           _no_dockerbuild=1
           ;;
         --deploy-path)
-          echo "path?"
           _deploy_path="$2"
           shift
           ;;
