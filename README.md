@@ -6,6 +6,9 @@ Tested against BIGIP v13.
 A bit rough around the edges.
 
 Repo includes a modified Dockerfile to include python, pip and f5-sdk.
+## Prerequisites
+- Docker or;
+- Python2 + f5-sdk
 
 ## Quick Usage
 `This has primarily been tested using Docker, but should work fine without`
