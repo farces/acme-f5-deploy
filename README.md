@@ -127,5 +127,13 @@ On the F5 the following is created:
 - Chain: xyz.domain.com.le-chain - this includes both the domain certificate and LetsEncrypt Authority.
 - Client SSL Profile: cssl.xyz.domain.com. This profile is never overwritten and can be customized as required.
 
+If you're using docker and need to export environment variables for DNS API configuration you can do the following:
+```
+docker exec acme_f5 /bin/sh -c "export CF_Key=our_key && export CF_Email=our_email && --issue --dns dns_cf -d sample.domain.com --renew-hook /acme-f5-deploy/f5deploy.py"
+```
+or edit the account.conf file in */tmp/out* manually.
+
+This only needs to be done once.
+
 ## Credits
 @f5central for the API script modified from https://github.com/f5devcentral/lets-encrypt-python
