@@ -9,19 +9,25 @@ Repo includes a modified Dockerfile to include python, pip and f5-sdk.
 
 ## Quick Usage
 `This has primarily been tested using Docker, but should work fine without`
+
+You need to know two paths in advance: the path acme.sh will put generated certificates & configuration, and the path you will store the f5deploy scripts (the path to f5deploy.py).
+
+**All examples assume your certificate path is _/tmp/out_ and script path is _/tmp/acme-f5-deploy/f5deploy_**
 1. `chmod +x configure.sh && ./configure.sh` (see Configuration section below for additional details)
 2. Modify creds.json to include the F5 hosts to deploy certificates to (may be multiple) and credentials - credentials must be the same for all hosts.
 3. Launch acme.sh in docker with the deployment script as `--renew-hook` target, or as a `--deploy-hook` target during a `--deploy` action.
   ```
-  docker run --rm  -it  \
- -v "$(pwd)":/acme.sh  \
+ docker run --rm  -it  \
+ -v "/tmp/acme-f5-deploy/f5deploy":/acme-f5-feploy
+ -v "/tmp/out":/acme.sh  \
  acme_f5 --issue -d xyz.domain.com \ 
- --renew-hook "/acme.sh/f5deploy/f5deploy.py"
+ --renew-hook "/acme-f5-deploy/f5deploy.py"
   ```
 4. Force renew the certificate
   ```
   docker run --rm  -it  \
-  -v "$(pwd)":/acme.sh  \
+  -v "/tmp/acme-f5-deploy/f5deploy":/acme-f5-feploy
+  -v "/tmp/out":/acme.sh  \
   acme_f5 --renew -d xyz.domain.com --force
   ```
   
@@ -31,7 +37,7 @@ On first run the certificates aren't pushed to the F5 - this is a shortcoming in
 An alternative to forcing a renew is to cd to the `./xyz.domain.com` directory and run `/path/to/f5deploy.py xyz.domain.com` manually. This only needs to be done once for each certificate.
 
 This works correctly for all use cases found at https://github.com/Neilpang/acme.sh/wiki/Run-acme.sh-in-docker including daemon, which will automatically renew and push changes to the F5.
-**If running as daemon with `--restart=unless-stopped` (or equivalent), do not use `-v $(pwd)` as this won't be correct on restart - use the full path to the directory instead.**
+
 ## Configuration
 All configuration is in config/creds.json.
 ```
@@ -81,25 +87,31 @@ You can then run `acme.sh --deploy -d xyz.domain.com --deploy-hook f5deploy`
 For Docker you would use:
 ```
 docker run --rm  -it  \
--v "$(pwd)":/acme.sh  \
+-v "/tmp/acme-f5-deploy/f5deploy":/acme-f5-feploy
+-v "/tmp/out":/acme.sh  \
 acme_f5 --deploy -d xyz.domain.com \ 
 --deploy-hook f5deploy
 ```
 **NOTE: When doing `--deploy` with a `--deploy-hook` the hook is stored permanently in the xyz.domain.com.conf file. 
 If you also set a `--renew-hook` during `--issue`, it will store both and run both on-renewal, which shouldn't cause problems but is not ideal.**
 
-## acme.sh daemon
-If running as a daemon in docker and --restart is set to true (or any value that would allow a restart) you will need to use `-v "/full/path/to/pwd:/acme.sh"`. When the container restarts it does not maintain the original $(pwd). This is a docker peculiarity.
 
 ## Full Example
+This example assumes:
+- Your certificate path is /tmp/out and;
+- Your f5deploy.py script path is /tmp/acme-f5-deploy/f5deploy
+
 ```
 cd tmp
 git clone https://github.com/farces/acme-f5-deploy.git
 cd acme-f5-deploy
-chmod +x configure.sh && ./configure
-docker run --restart=unless-stopped -itd -v "/tmp/acme-f5-deploy":/acme.sh --net=host --name=acme_f5 acme_f5 daemon
-docker exec acme_f5 --issue -d sample.domain.com --renew-hook "/acme.sh/f5deploy/f5deploy.py"
+chmod +x configure.sh && ./configure.sh
+docker run --restart=unless-stopped -itd -v "/tmp/acme-f5-deploy/f5deploy":/acme-f5-deploy \
+  -v "/tmp/out":/acme.sh --net=host --name=acme_f5 acme_f5 daemon
+docker exec acme_f5 --issue -d sample.domain.com --renew-hook "/acme-f5-deploy/f5deploy.py"
 docker exec acme_f5 --renew -d sample.domain.com --force
+docker exec acme_f5 --issue -d sample2.domain.com
+docker exec acme_f5 --deploy -d sample2.domain.com --deploy-hook f5deploy
 ```
 
 ## Notes
