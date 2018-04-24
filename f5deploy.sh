@@ -26,7 +26,7 @@ f5deploy_deploy() {
     fi
   else
     #we're running local
-    echo "run build.sh --nodocker to set script path" && return 1
+    echo "run configure.sh --nodocker to set script path" && return 1
     if ! [ $? -eq 0 ]; then
       return $?
     fi
