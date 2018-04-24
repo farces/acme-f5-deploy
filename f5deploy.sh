@@ -20,7 +20,7 @@ f5deploy_deploy() {
 
   if grep docker /proc/1/cgroup -qa; then
     # we're in docker
-    /acme.sh/f5deploy/f5deploy.py $*
+    /acme-f5-deploy/f5deploy.py $*
     if ! [ $? -eq 0 ]; then
       return ?$
     fi
