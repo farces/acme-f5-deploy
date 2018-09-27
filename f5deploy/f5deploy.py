@@ -38,7 +38,7 @@ def deploy_cert(domain, path):
     chain = 'fullchain.cer'
 
     for target_host in f5_hosts:
-        mr = ManagementRoot(target_host.get('host'), f5_user, f5_password, target_host.get('port',443))
+        mr = ManagementRoot(target_host.get('host'), f5_user, f5_password, port=target_host.get('port',443))
 
         # Shorten API calls
         mr_upload_file = mr.shared.file_transfer.uploads.upload_file
