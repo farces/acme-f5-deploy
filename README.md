@@ -46,7 +46,8 @@ All configuration is in config/creds.json.
 ```
 {
   "f5host": [
-    "192.168.1.92"
+    { "host": "192.168.1.92", "port": 8443 },
+    { "host": "192.168.2.92" }
   ],
   "f5acct": "admin",
   "f5pw": "admin"
@@ -55,7 +56,7 @@ All configuration is in config/creds.json.
   "parent_cssl": "/Common/clientssl"
 }
 ```
-* f5host: may be a single IP address, or multiple separated by commas.
+* f5host: a dict {host:, port:} of appliances to connect to. If port is ommitted it defaults to 443.
 * f5acct and f5pw: shared credentials for all hosts at this stage.
 * create_cssl: boolean- create client SSL profile on F5 - default is true.
 * f5partition: partition to crete CSSL in - default is Common. **Only include partition name without leading or trailing slashes.**
