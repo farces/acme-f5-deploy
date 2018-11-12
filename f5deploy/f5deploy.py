@@ -53,7 +53,6 @@ def deploy_cert(domain, path):
         mr_upload_file(os.path.join(path, chain))
 
         # Check to see if these already exist
-        domain = domain.replace('*',"wild") # required as F5 cannot have certain profiles with * in the name (namely cssl)
         key_status = mr_key_exists(name='{0}.key'.format(domain))
         cert_status = mr_cert_exists(name='{0}.crt'.format(domain))
         chain_status = mr_cert_exists(name='{0}.le-chain.crt'.format(domain))
