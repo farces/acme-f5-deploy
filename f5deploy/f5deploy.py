@@ -33,6 +33,8 @@ logger.propagate = False
 def deploy_cert(domain, path):
     logger.info('Deploying to {0} device(s)'.format(len(f5_hosts)))
     logger.info('Partition: {0}, CSSL: {1}, Parent CSSL: {2}'.format(f5_partition, create_cssl, parent_cssl))
+    
+    # reference to location on disk
     key = '{0}.key'.format(domain)
     cert = '{0}.cer'.format(domain)
     chain = 'fullchain.cer'
@@ -53,6 +55,9 @@ def deploy_cert(domain, path):
         mr_upload_file(os.path.join(path, chain))
 
         # Check to see if these already exist
+        domain = domain.replace('*',"wild") # some files cannot be named with * 
+                                            # this replace can only be done here as prior refs to domain
+                                            # reference files on disk, not names on F5
         key_status = mr_key_exists(name='{0}.key'.format(domain))
         cert_status = mr_cert_exists(name='{0}.crt'.format(domain))
         chain_status = mr_cert_exists(name='{0}.le-chain.crt'.format(domain))
